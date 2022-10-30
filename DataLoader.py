@@ -44,14 +44,3 @@ class MyDataset(Dataset):
         HR_img = self.H_transform(HR_image)
         LR_img = self.L_transform(HR_img)
         return LR_img,HR_img
-
-def test():
-    dataset = MyDataset()
-    loader = DataLoader(dataset,batch_size=1)
-    for l,h in loader:
-        print(l.shape)
-        print(h.shape)
-
-
-if __name__ == "__main__":
-    test()
