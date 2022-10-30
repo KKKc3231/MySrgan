@@ -6,7 +6,7 @@ srgan是将生成对抗网络gan引入超分，使用对抗的思想来做超分
 
 - `Discriminator`
 
-![](https://github.com/KKKc3231/GAN-/blob/main/Fic/Discriminator.png)
+![](https://github.com/KKKc3231/MySrgan/blob/main/Fic/Discriminator.png)
 
 `HR:`原始的高清图像
 
@@ -16,7 +16,7 @@ SRGAN的D输入为HR或SR，然后进行分类即可
 
 - `Generator`
 
-![](https://github.com/KKKc3231/kkkc/blob/main/Fic/Generator.png)
+![](https://github.com/KKKc3231/MySrgan/blob/main/Fic/Generator.png)
 
 G的几个模块：
 
