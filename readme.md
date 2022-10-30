@@ -90,7 +90,7 @@ L_transform = transforms.Compose(
 
 - 加大了residual block的数量
 - 去掉了BN层
-- 加大超分后的图像大小（可能会爆内存）
+- 加大超分后的图像大小（可能会爆显存）
 
 
 
