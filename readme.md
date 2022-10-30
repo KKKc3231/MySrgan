@@ -75,11 +75,11 @@ L_transform = transforms.Compose(
 
 超分结果在`result`文件夹中
 
-- SR-IR
+- `SR-IR`
 
 ![](https://github.com/KKKc3231/MySrgan/blob/main/result/SR-IR.png)
 
-- HR-SR
+- `HR-SR`
 
 ![](https://github.com/KKKc3231/MySrgan/blob/main/result/HR-SR.png)
 
