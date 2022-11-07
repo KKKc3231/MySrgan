@@ -14,6 +14,8 @@ from torchvision import transforms
 
 LOAD_MODEL = True
 SAVE_MODEL = True
+HR_DIR = "HR/"
+SR_DIR = "save_result/"
 CHECKPOINT_GEN = "gen.pth"
 CHECKPOINT_DISC = "disc.pth"
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
@@ -50,3 +52,13 @@ all_tranform = transforms.Compose(
         # transforms.RandomRotation(degrees=0.5),
     ]
 )
+
+# ToTensor
+Tensor_transform = transforms.Compose([
+    transforms.ToTensor(),
+])
+
+# ToPIL
+PIL_transform = transforms.Compose([
+    transforms.ToPILImage(),
+])
