@@ -62,7 +62,7 @@ def save_image(low_res_folder, gen):
         image = torch.unsqueeze(image, dim=0)
 #       print(image.shape)
         if DEVICE == "cuda":
-            image = image.type(torch.cuda.FloatTensor) # 在colab中会报错
+            image = image.type(torch.cuda.FloatTensor) # 在colab中防止报错
         with torch.no_grad():
             SR_img = gen(image)
             SR_img = torch.squeeze(SR_img, dim=0)  # 去掉Batch
