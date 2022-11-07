@@ -18,6 +18,13 @@ Dataset = MyDataset(path = "E:/SRGAN-SRCNN/Data/SR_training_datasets/BSDS200/")
 Dataloader = DataLoader(dataset=Dataset,batch_size=1,shuffle=True)
 L_GP = 10 # 梯度惩罚系数
 
+# best_psnr和best_ssim初始化
+save_image(low_res_folder="./test_image/", gen=net_G)
+best_psnr = M_psnr(HR_DIR,SR_DIR)
+best_ssim = M_ssim(HR_DIR,SR_DIR)
+print("best_psnr:{}".format(best_psnr))
+print("best_ssim:{}".format(best_ssim))
+
 # 搭建模型
 net_D = Discriminator()
 net_G = Generator()
@@ -69,13 +76,22 @@ for epoch in range(NUM_EPOCHS):
         gLoss.backward()
         optimizer_G.step()
 
-        # tqdm进度条可视化
-        processBar.set_description(desc='[%d/%d] Loss_D: %.4f Loss_G: %.4f D(x): %.4f D(G(z)): %.4f' % (
-            epoch, NUM_EPOCHS, dLoss.item(), gLoss.item(), real_out.item(), fake_out.item()))
-
-    if epoch % 2 == 0:
-        torch.save(net_D.state_dict(),'save_model/net_D_{}.pth'.format(epoch))
-        torch.save(net_G.state_dict(),'save_model/net_G_{}.pth'.format(epoch))
+        # tqdm进度条可视化，当batch_size > 1 的时候会报错
+#         processBar.set_description(desc='[%d/%d] Loss_D: %.4f Loss_G: %.4f D(x): %.4f D(G(z)): %.4f' % (
+#             epoch, NUM_EPOCHS, dLoss.item(), gLoss.item(), real_out.item(), fake_out.item()))
+        print("-----------------------Epoch：{}----------------------".format(epoch))
+    
+    save_image(low_res_folder="/content/drive/MyDrive/SRGAN/test_image/", gen=net_G)
+    # 计算平均的PSNR和SSIM
+    m_psnr = M_psnr(HR_DIR,SR_DIR)
+    m_ssim = M_ssim(HR_DIR,SR_DIR)
+    if m_psnr > best_psnr:  # 以psnr指标为判别标准，只保存有提高的模型
+      GREEN = '\033[92m'
+      END_COLOR = '\033[0m'
+      print(GREEN + "New_Best_PSNR:{} @epoch:{}".format(m_psnr,epoch) + END_COLOR)  # 带颜色的打印一下，明显 
+      torch.save(net_D.state_dict(), './save_model/net_D_{}_{:4f}.pth'.format(epoch,m_psnr))
+      torch.save(net_G.state_dict(), './save_model/net_G_{}_{:4f}.pth'.format(epoch,m_psnr))
+      best_psnr = m_psnr
 
 
 
