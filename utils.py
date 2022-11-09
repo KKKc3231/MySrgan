@@ -68,7 +68,25 @@ def save_image(low_res_folder, gen):
             SR_img = torch.squeeze(SR_img, dim=0)  # 去掉Batch
             SR_img = PIL_transform(SR_img)
             SR_img.save(f"save_result/{file}")
+            
+# 
+def save_test_image(low_res_folder, gen):
+    files = os.listdir(low_res_folder)
+    gen.eval()
+    for file in files:
+        path = low_res_folder + file
+        print(path)
+        img = cv2.imread(path, cv2.IMREAD_COLOR)
+        img = img * 1.0 / 255.
+        img = torch.from_numpy(numpy.transpose(img[:, :, [2, 1, 0]], (2, 0, 1))).float()
+        img_LR = img.unsqueeze(0)
+        img_LR = img_LR.to(config.DEVICE)
 
+        with torch.no_grad():
+            output = gen(img_LR).data.squeeze().float().cpu().clamp_(0, 1).numpy()
+        output = numpy.transpose(output[[2, 1, 0], :, :], (1, 2, 0))
+        output = (output * 255.0).round()
+        cv2.imwrite('save_result/{}'.format(file), output)
 
 # 计算psnr指标，PSNR = 10 * log10(Max(I**2) / MSE)
 def caculate_psnr(hr_image, sr_image):
