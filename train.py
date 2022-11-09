@@ -72,7 +72,7 @@ for epoch in range(NUM_EPOCHS):
         gLoss_GAN = 0.001 * (loss_bce(FakeImg,torch.ones_like(FakeImg)))
         # gLoss_GAN = 0.001 * (torch.mean(1.0 - fake_out))  # 生成器的对抗损失
         gLoss_VGG = 0.006 * VGG_loss(FakeImg,H_img)  # LR和HR经过Generator后的特征图的损失
-        gLoss = gLoss_SR + gLoss_VGG  # 总的损失
+        gLoss = gLoss_SR + gLoss_VGG + gLoss_GAN# 总的损失
         gLoss.backward()
         optimizer_G.step()
 
