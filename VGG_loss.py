@@ -25,6 +25,9 @@ class VGGLoss(nn.Module):
         loss = self.loss(vgg_input_features, vgg_target_features)
         return loss
 
+# 教师网络指导的损失
+def Teacher_loss(t_image,s_image,loss):
+    pass
 
 
 
