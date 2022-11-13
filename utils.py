@@ -6,10 +6,13 @@ import numpy
 import torch
 import torch.nn as nn
 from PIL import Image
+
+import config
 from model import Generator
 from config import *
 from torchvision.utils import save_image
 from skimage.metrics import structural_similarity as ssim
+import cv2
 
 
 # 梯度惩罚
@@ -52,24 +55,6 @@ def plot_example(low_res_folder, gen):
         SR_img.save("./save_result/{}".format(file))
 
 
-# 保存结果
-def save_image(low_res_folder, gen):
-    files = os.listdir(low_res_folder)
-    gen.eval()
-    for file in files:
-        image = Image.open(low_res_folder + file)
-        image = Tensor_transform(image)
-        image = torch.unsqueeze(image, dim=0)
-#       print(image.shape)
-        if DEVICE == "cuda":
-            image = image.type(torch.cuda.FloatTensor) # 在colab中防止报错
-        with torch.no_grad():
-            SR_img = gen(image)
-            SR_img = torch.squeeze(SR_img, dim=0)  # 去掉Batch
-            SR_img = PIL_transform(SR_img)
-            SR_img.save(f"save_result/{file}")
-            
-# 
 def save_test_image(low_res_folder, gen):
     files = os.listdir(low_res_folder)
     gen.eval()
@@ -83,10 +68,32 @@ def save_test_image(low_res_folder, gen):
         img_LR = img_LR.to(config.DEVICE)
 
         with torch.no_grad():
-            output = gen(img_LR).data.squeeze().float().cpu().clamp_(0, 1).numpy()
+            # output = gen(img_LR).data.squeeze().float().cpu().clamp_(0, 1).numpy()
+            output = gen(img_LR).squeeze(0).numpy()
         output = numpy.transpose(output[[2, 1, 0], :, :], (1, 2, 0))
         output = (output * 255.0).round()
         cv2.imwrite('save_result/{}'.format(file), output)
+
+
+# 保存结果
+def save_image(low_res_folder, gen):
+    files = os.listdir(low_res_folder)
+    gen.eval()
+    for file in files:
+        path = low_res_folder + file
+        image = Image.open(path)
+        image = Tensor_transform(image)
+        # image = image * 1.0 / 255
+        image = torch.unsqueeze(image, dim=0)
+        print(image.shape)
+        image.to(DEVICE)
+        with torch.no_grad():
+            SR_img = gen(image)
+            SR_img = torch.squeeze(SR_img, dim=0)  # 去掉Batch
+            # SR_img = (SR_img * 255.0).round()
+            SR_img = PIL_transform(SR_img)
+            SR_img.save(f"save_result/{file}")
+
 
 # 计算psnr指标，PSNR = 10 * log10(Max(I**2) / MSE)
 def caculate_psnr(hr_image, sr_image):
@@ -103,7 +110,7 @@ def caculate_ssim(hr_image, sr_image):
 
 
 # 所有图片的PSNR平均值
-def M_psnr(hr_folder, sr_folder):
+def M_psnr(hr_folder, sr_folder,mode='YCbCr'): # mode: YCbCr or RGB
     psnr_sum = []
     hr_list = []
     for img in os.listdir(hr_folder):
@@ -111,8 +118,8 @@ def M_psnr(hr_folder, sr_folder):
             hr_list.append(img)
     # sr_list = os.listdir(sr_folder)
     for img in hr_list:
-        hr_img = Image.open(os.path.join(hr_folder, img))
-        sr_img = Image.open(os.path.join(sr_folder, img))
+        hr_img = Image.open(os.path.join(hr_folder, img)).convert(mode)
+        sr_img = Image.open(os.path.join(sr_folder, img)).convert(mode)
         hr_img = numpy.array(hr_img)
         sr_img = numpy.array(sr_img)
         psnr = caculate_psnr(hr_img, sr_img)
@@ -121,7 +128,7 @@ def M_psnr(hr_folder, sr_folder):
 
 
 # 所有图像的SSIM平均值
-def M_ssim(hr_folder, sr_folder):
+def M_ssim(hr_folder, sr_folder,mode='YCbCr'):
     ssim_num = []
     hr_list = []
     for img in os.listdir(hr_folder):
@@ -129,8 +136,8 @@ def M_ssim(hr_folder, sr_folder):
             hr_list.append(img)
     # sr_list = os.listdir(sr_folder)
     for img in hr_list:
-        hr_img = Image.open(os.path.join(hr_folder, img))
-        sr_img = Image.open(os.path.join(sr_folder, img))
+        hr_img = Image.open(os.path.join(hr_folder, img)).convert(mode)
+        sr_img = Image.open(os.path.join(sr_folder, img)).convert(mode)
         hr_img = numpy.array(hr_img)
         sr_img = numpy.array(sr_img)
         ssim = caculate_ssim(hr_img, sr_img)
@@ -138,13 +145,14 @@ def M_ssim(hr_folder, sr_folder):
     return numpy.mean(ssim_num)
 
 
-# if __name__ == "__main__":
-#     Gen = Generator()
-#     Gen.load_state_dict(torch.load("./save_model/net_G_352_26.336534.pth", map_location="cpu"))
-#     save_image(low_res_folder="./test_image/", gen=Gen)
-#     hr_folder = HR_DIR
-#     sr_folder = SR_DIR
-#     mean_psnr = M_psnr(hr_folder, sr_folder)
-#     mean_ssim = M_ssim(hr_folder, sr_folder)
-#     print("{:.4f}".format(mean_psnr))
-#     print("{:.4f}".format(mean_ssim))
+if __name__ == "__main__":
+    # Gen = Generator()
+    # Gen.load_state_dict(torch.load("./save_model/net_G_2723_0.785834.pth", map_location="cpu"))
+    # save_test_image(low_res_folder="./test_image/", gen=Gen)
+    hr_folder = "E:/SRGAN-SRCNN/SRGAN/HR/"
+    # sr_folder = r"E:\SRGAN-SRCNN\SRGAN\save_result/" # 自己训练的SRGAN
+    sr_folder = r"E:\SRGAN-SRCNN\SRGAN\esrgan\save_result/"  # ESRGAN
+    mean_psnr = M_psnr(hr_folder, sr_folder,mode="YCbCr") # mode: YCbCr or RGB
+    mean_ssim = M_ssim(hr_folder, sr_folder,mode="YCbCr")
+    print("Mean_psnr: {:.4f}".format(mean_psnr))
+    print("Mean_ssim: {:.4f}".format(mean_ssim))
