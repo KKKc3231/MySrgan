@@ -3,15 +3,16 @@
 # @Author : KKKc
 # @FileName: test.py
 
-from model import Generator,Discriminator
+from new_model import Generator,Discriminator
 import torch
 from PIL import Image
 import torchvision.transforms as transform
 
+
 model = Generator()
 model_D = Discriminator()
-model.load_state_dict(torch.load('save_model/net_G_1995.pth',map_location='cpu'))
-IR_image = Image.open('img_l.jpg')
+model.load_state_dict(torch.load('save_model/new_net_G_1170.pth',map_location='cpu'))
+IR_image = Image.open('./test_image/Girl_lr.png')
 
 trans_Tensor = transform.Compose([
     transform.ToTensor()
